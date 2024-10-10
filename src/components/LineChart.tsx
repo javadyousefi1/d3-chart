@@ -1,23 +1,35 @@
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, memo } from "react";
+// d3
 import * as d3 from "d3";
+// antd
 import { Button } from "antd";
 
-const ZoomableLineChart = ({ data, label, value, width, height }) => {
-  const [options, setOptions] = useState({ zoomAble: false, crossAir: false });
-  const svgRef = useRef();
-  const isCrosshairActive = useRef(false);
-  const isZoomActive = useRef(false);
-  const crosshairLinesRef = useRef({ vertical: null, horizontal: null });
-  const crosshairGroupRef = useRef(null);
-  const mousePosition = useRef({ x: null, y: null });
+type LineChartProps<T> = {
+  label: string,
+  value: string,
+  width: number,
+  height: number,
+  data: T[]
+}
 
+function LineChart<T>({ data, label, value, width, height }): React.FC<LineChartProps<T>> {
+  const [options, setOptions] = useState({ zoomAble: false, crossAir: false }); // state for controlling the ui
+  const svgRef = useRef(); // svg reference for adding every layer or line we need
+  const isCrosshairActive = useRef(false); // controlling crossair avtivity
+  const isZoomActive = useRef(false); // controlling zoom avtivity
+  const crosshairLinesRef = useRef({ vertical: null, horizontal: null }); // keep crossair v & h for keep ui realtime
+  const crosshairGroupRef = useRef(null); // for keep and cache v & h
+  const mousePosition = useRef({ x: null, y: null }); // save mouse postion for prevent blinking crossair
+
+  // ui constants
   const margin = { top: 10, right: 30, bottom: 30, left: 60 };
+  // chart size
   const chartWidth = width - margin.left - margin.right;
   const chartHeight = height - margin.top - margin.bottom;
 
   useEffect(() => {
-    const svgElement = d3.select(svgRef.current);
-    svgElement.selectAll("*").remove();
+    const svgElement = d3.select(svgRef.current); // get svg refrence for go on it
+    svgElement.selectAll("*").remove(); // remove the item if be in the svg
 
     const svg = svgElement
       .attr("width", chartWidth + margin.left + margin.right)
@@ -69,8 +81,9 @@ const ZoomableLineChart = ({ data, label, value, width, height }) => {
         .attr("d", line);
     }
 
+    // add zoom option
     const zoom = d3.zoom()
-      .scaleExtent([0, 20]) // Set min zoom to 1
+      .scaleExtent([0, 20])
       .extent([[0, 0], [chartWidth, chartHeight]])
       .on("zoom", (event) => updateChart(event));
 
@@ -80,10 +93,10 @@ const ZoomableLineChart = ({ data, label, value, width, height }) => {
       .style("fill", "none")
       .style("pointer-events", "all")
       .call(zoom)
-      .on("mousemove", handleMouseMove) // Add mouse move event
-      .on("mouseleave", handleMouseLeave); // Add mouse leave event
+      .on("mousemove", handleMouseMove)
+      .on("mouseleave", handleMouseLeave);
 
-    // Create crosshair lines and set them to be hidden initially
+    // add crossair
     const crosshairGroup = svg.append("g").style("opacity", 0);
     crosshairGroupRef.current = crosshairGroup;
     crosshairLinesRef.current.vertical = crosshairGroup.append("line")
@@ -147,9 +160,11 @@ const ZoomableLineChart = ({ data, label, value, width, height }) => {
 
   return (
     <div id="dataviz_axisZoom" className="flex flex-col items-center justify-center h-full">
+      {/* svg container */}
       <svg ref={svgRef}>
         <text id="tooltip" fontSize="12px" fill="black" style={{ display: "none" }}></text>
       </svg>
+      {/* chart controller */}
       <div className="flex mt-10 gap-x-4">
         <Button onClick={() => {
           isCrosshairActive.current = !isCrosshairActive.current;
@@ -168,4 +183,4 @@ const ZoomableLineChart = ({ data, label, value, width, height }) => {
   );
 };
 
-export default ZoomableLineChart;
+export default memo(LineChart);

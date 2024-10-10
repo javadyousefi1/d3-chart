@@ -32,7 +32,7 @@ export const LineChartBasicDemo = () => {
         <div>
             {/* chart */}
             <div className="p-10 border border-gray-200 rounded-lg shadow-sm bg-gray-50">
-                <LineChart data={data} width={700} height={700} label={"x"} value={"y"} />
+                <LineChart<{ x: number, y: number }> data={data} width={700} height={700} label={"x"} value={"y"} />
             </div>
             {/* data selector */}
             <div className="flex flex-col items-center justify-center mt-10 gap-y-3">
