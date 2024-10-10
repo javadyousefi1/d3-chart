@@ -93,8 +93,7 @@ function LineChart<T>({ data, label, value, width, height }): React.FC<LineChart
       .style("fill", "none")
       .style("pointer-events", "all")
       .call(zoom)
-      .on("mousemove", handleMouseMove)
-      .on("mouseleave", handleMouseLeave);
+      .on("mousemove", handleMouseMove).on("mouseleave", handleMouseLeave);
 
     // add crossair
     const crosshairGroup = svg.append("g").style("opacity", 0);
@@ -141,17 +140,11 @@ function LineChart<T>({ data, label, value, width, height }): React.FC<LineChart
       }
     }
 
-    // Keep crosshair at last position on mouse leave
+    // Handle mouse leave to hide crosshair
     function handleMouseLeave() {
-      if (isCrosshairActive.current) {
-        const { x, y } = mousePosition.current;
-        crosshairLinesRef.current.vertical.attr("x1", x).attr("x2", x);
-        crosshairLinesRef.current.horizontal.attr("y1", y).attr("y2", y);
-        crosshairGroup.style("opacity", 1); // Keep crosshair visible
-      } else {
-        crosshairGroup.style("opacity", 0); // Hide crosshair if not active
-      }
+      // crosshairGroupRef.current.style("opacity", 0); // Hide crosshair
     }
+
 
     return () => {
       svgElement.selectAll("*").remove();
@@ -169,6 +162,9 @@ function LineChart<T>({ data, label, value, width, height }): React.FC<LineChart
         <Button onClick={() => {
           isCrosshairActive.current = !isCrosshairActive.current;
           setOptions(prev => ({ ...prev, crossAir: !prev.crossAir }));
+          if (isCrosshairActive.current === false) {
+            crosshairGroupRef.current.style("opacity", 0); // Hide crosshair
+          }
         }}>
           {options.crossAir ? "Disable" : "Enable"} Crosshair
         </Button>
